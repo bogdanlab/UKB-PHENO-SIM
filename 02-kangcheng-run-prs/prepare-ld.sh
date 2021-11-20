@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #$ -cwd
-#$ -l h_data=8G,h_rt=5:00:00,highp
+#$ -l h_data=2G,h_rt=5:00:00,highp
 #$ -j y
 #$ -o ./job_out
 #$ -t 1-22
