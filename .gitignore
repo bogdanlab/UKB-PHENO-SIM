@@ -1,4 +1,5 @@
 out/
-submit-logs/
+submitit-logs/
 .ipynb_checkpoints/
 job_out
+__pycache__/
