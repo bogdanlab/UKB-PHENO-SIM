@@ -1,8 +1,13 @@
 #!/bin/sh
 #$ -cwd
 #$ -j y
-#$ -l h_data=6G,h_rt=15:00:00,highp -pe shared 6
+#$ -l h_data=6G,h_rt=12:00:00,highp -pe shared 6
 #$ -o ./job_out
+#$ -t 1-10
+
+# for suffix in gcta uniform mafukb; do
+# qsub run-prs-weights.sh hsq-0.25-pcausal-0.01-hermodel-${suffix}
+# done 
 
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
@@ -11,8 +16,7 @@ export OPENBLAS_NUM_THREADS=1
 Rscript=/u/project/pasaniuc/kangchen/software/miniconda3/envs/r/bin/Rscript
 PLINK_DIR=out/PLINK
 
-# prefix=$1
-prefix=hsq-0.25-pcausal-0.01-hermodel-gcta
+prefix=$1
 sim_i=${SGE_TASK_ID}
 sim_i=$((sim_i - 1))
 
