@@ -11,14 +11,16 @@ export OPENBLAS_NUM_THREADS=1
 trait=$1
 
 Rscript=/u/project/pasaniuc/kangchen/software/miniconda3/envs/r/bin/Rscript
-PLINK_DIR=../01-simulate-pheno/out/PLINK/
-LD_DIR=../01-simulate-pheno/out/LD/
+PLINK_DIR=out/PLINK/
+LD_DIR=../00-compile-data/out/LD/
+
+
 OUT_DIR=out/PRS-WEIGHTS/${trait}
 GWAS_DIR=out/LDPRED2/${trait}
 mkdir -p ${OUT_DIR}
 
 echo "val_pheno:"
-zcat ${DATA_DIR}/eur_val.pheno.tsv.gz | head
+zcat ${GWAS_DIR}/eur_val.pheno.tsv.gz | head
 
 ${Rscript} ~/project-pasaniuc/software/prs-uncertainty/weight.R \
     --train_bfile=${PLINK_DIR}/eur_train.all \
@@ -28,6 +30,6 @@ ${Rscript} ~/project-pasaniuc/software/prs-uncertainty/weight.R \
     --test_bfile=${PLINK_DIR}/eur_test.all \
     --out_prefix=${OUT_DIR}/${trait} \
     --ld_dir=${LD_DIR}/ \
-    --n_core=10 \
+    --n_core=8 \
     --n_burn_in=100 \
     --n_iter=500
