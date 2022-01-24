@@ -22,7 +22,6 @@ PRS uncertainty will be trained on a subset of 270,000 European individuals usin
 
 ### 01-simulate-pheno/
 1. Simulate the phenotype with various genetic architecture.
-2. Perform GWAS for each simulated trait.
 
 ### 02-kangcheng-run-prs/
 Run LDpred2 on simulated data.

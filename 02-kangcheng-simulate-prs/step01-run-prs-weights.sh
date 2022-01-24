@@ -21,7 +21,7 @@ sim_i=${SGE_TASK_ID}
 sim_i=$((sim_i - 1))
 
 OUT_DIR=out/PRS-WEIGHTS/${prefix}
-DATA_DIR=../01-simulate-pheno/out/LDPRED2/${prefix}
+DATA_DIR=../01-simulate-pheno/out/OLD-LDPRED2/${prefix}
 LD_DIR=out/LD/
 mkdir -p ${OUT_DIR}
 
