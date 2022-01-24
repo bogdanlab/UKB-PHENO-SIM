@@ -3,10 +3,18 @@ import numpy as np
 import dapgen
 import dask.array as da
 import admix
+from typing import List
 
 
 def simulate_quant_pheno(
-    bfile_list, hsq, causal_prop, out_prefix, hermodel="gcta", n_sim=100
+    bfile_list: List[str],
+    hsq: float,
+    causal_prop: float,
+    out_prefix: str,
+    hermodel: str = "gcta",
+    genetic_effect_draw: str = "random",
+    n_sim: int = 100,
+    freq_suffix: str = ".all.afreq",
 ):
     """
     Simulate quantitative phenotypes from a list of bfiles (from different chromosomes)
@@ -15,7 +23,7 @@ def simulate_quant_pheno(
     ----------
     bfile_list : list
         List of bfiles (from different chromosomes), each bfile <bfile> is accompanied
-        by frequency file <bfile>.freq.
+        by frequency file <bfile>.<freq_suffix>.
     hsq : float
         Heritability
     causal_prop : float
@@ -23,14 +31,28 @@ def simulate_quant_pheno(
     out_prefix : str
         Prefix for output files <out_prefix>.beta.tsv, <out_prefix>.pheno_g.tsv, and
         <out_prefix>.pheno.tsv will be created.
+    hermodel : str
+        Heritability model.
+    genetic_effect_draw : str
+        Method for drawing genetic effects.
+        - "random" : randomly draw for each of the `n_sim` simulations.
+        - "fixed" : draw once and use the same vector for all `n_sim` simulations
+        All methods use the heritability model.
+    n_sim : int
+        Number of simulations.
+    freq_suffix : str
+        Suffix for frequency files.
     """
-    geno = []
-    df_indiv = None
-    df_snp = []
-    df_freq = []
+
+    geno: da.Array = []
+    df_indiv: pd.DataFrame = None
+    df_snp: pd.DataFrame = []
+    df_freq: pd.DataFrame = []
 
     for bfile in bfile_list:
-        this_geno, this_df_snp, this_df_indiv = dapgen.read_bfile(bfile, snp_chunk=1024)
+        this_geno, this_df_snp, this_df_indiv = dapgen.read_plink(
+            bfile + ".bed", snp_chunk=1024
+        )
         if df_indiv is None:
             df_indiv = this_df_indiv
         else:
@@ -38,7 +60,7 @@ def simulate_quant_pheno(
                 this_df_indiv
             ), ".fam should be consistent for all bfiles"
         df_freq.append(
-            pd.read_csv(bfile + ".freq", delim_whitespace=True).set_index("ID")
+            pd.read_csv(bfile + freq_suffix, delim_whitespace=True).set_index("ID")
         )
         geno.append(this_geno)
         df_snp.append(this_df_snp)
@@ -61,9 +83,28 @@ def simulate_quant_pheno(
     n_causal = int(n_snp * causal_prop)
     print(f"n_snp={n_snp}, n_indiv={n_indiv}, n_causal={n_causal}")
 
-    sim = admix.simulate.quant_pheno_1pop(
-        geno=geno, hsq=hsq, n_causal=n_causal, n_sim=n_sim, snp_prior_var=snp_prior_var
-    )
+    if genetic_effect_draw == "random":
+        sim = admix.simulate.quant_pheno_1pop(
+            geno=geno,
+            hsq=hsq,
+            n_causal=n_causal,
+            n_sim=n_sim,
+            snp_prior_var=snp_prior_var,
+        )
+    elif genetic_effect_draw == "fixed":
+        beta = np.zeros(n_snp)
+        cau = sorted(np.random.choice(np.arange(n_snp), size=n_causal, replace=False))
+        beta[cau] = (
+            np.random.normal(
+                loc=0.0,
+                scale=1.0,
+                size=n_causal,
+            )
+            * np.sqrt(snp_prior_var[cau])
+        )
+        sim = admix.simulate.quant_pheno_1pop(
+            geno=geno, hsq=hsq, n_causal=n_causal, n_sim=n_sim, beta=beta
+        )
 
     df_beta = pd.DataFrame(
         sim["beta"], columns=[f"SIM_{i}" for i in range(n_sim)], index=df_snp.index
