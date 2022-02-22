@@ -103,7 +103,7 @@ def simulate_quant_pheno(
             * np.sqrt(snp_prior_var[cau])
         )
         sim = admix.simulate.quant_pheno_1pop(
-            geno=geno, hsq=hsq, n_causal=n_causal, n_sim=n_sim, beta=beta
+            geno=geno, hsq=hsq, n_sim=n_sim, beta=beta
         )
 
     df_beta = pd.DataFrame(
