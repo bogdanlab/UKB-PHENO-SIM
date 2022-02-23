@@ -85,13 +85,32 @@
 #   }
 # }
 
+
+library(readr)
 library(bigsnpr)
 library(bigreadr)
 library(dplyr)
 library(ggplot2)
 
 csv <- "/u/project/pasaniuc/ziqixu09/phenotype/pheno.csv"
+pheno_eid = fread2(csv, select="eid")
+covar <- read_csv("/u/project/pasaniuc/ziqixu09/phenotype/covar.csv", col_types = cols(eid='i')) %>% 
+    rename(sex = SEX)
 
+# compare eid in pheno and covar 
+stopifnot(all(pheno_eid, covar$eid))
+
+SUMMARY <- function(y) {
+    print(summary(y))
+    cat("\n")
+}
+
+saveRDS <- function(x, file, ...) {
+    print(file)
+    base::saveRDS(x, file, ...)
+}
+
+                                      
 #### Quantitative UKBB phenotypes ####
 
 bigassertr::assert_dir("data/ukbb-quant-pheno")
